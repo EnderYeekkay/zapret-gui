@@ -2,26 +2,73 @@
     font-family: "Roboto";
     src: url('../fonts/roboto.ttf');
 }
+@font-face {
+    font-family: "Nerd";
+    src: url('../fonts/firacode.ttf') format('truetype');
+}
 body {
     color:whitesmoke;
     font-family: 'Roboto';
-    background-color: #3A3B41;
-    border: 1px solid #393A3F;
+    background-color: #2C2D32;
     border-radius: 15px;
     /* border #393A3F */
 }
 header {
+    -webkit-app-region: drag;
+
+    user-select: none;
     left: 0;
     right: 0;
     top: 0;
     position: absolute;
     display: flex;
+    background-color: #393A3F;
 }
 #maintext {
+    font-size: 20px;
+    padding: 10px;
     position: absolute;
     left: 50%;
-    transform: translateX(-50%);
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: 900;
+
 }
 #logo {
-    
+    width: 32px;
+    padding: 8px;
+}
+#header_btns {
+    -webkit-app-region: no-drag;
+
+    right: 0;
+    position: absolute;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    font-size: 32px;
+    height: 100%;
+    margin-right: 10px;
+}
+
+.header_btn_ico {
+    position: relative;
+    width: 20px;
+    height: 20px;
+}
+
+.header_btn {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 42px;
+    transition: .3s;
+}
+#minimize:hover {
+    background-color: rgba(240, 248, 255, 0.453);
+}
+#close:hover {
+    background-color: red;
 }

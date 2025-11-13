@@ -5,6 +5,7 @@
     "start": "npx electron main.js"
   },
   "dependencies": {
-    "electron": "^39.1.2"
+    "electron": "^39.1.2",
+    "jquery": "^3.7.1"
   }
 }

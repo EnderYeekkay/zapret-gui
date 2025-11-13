@@ -1,6 +1,10 @@
 const l = console.log
-const $ = mw.$
 document.addEventListener('DOMContentLoaded', () => {
-    l($)
-
+    $('#maintext').html(`Губорыл v${mw.version}`)
+    $('#close').on('click', () => {
+        mw.closeWindow()
+    })
+    $('#minimize').on('click', () => {
+        mw.minimize()
+    })
 })
