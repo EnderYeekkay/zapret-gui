@@ -6,6 +6,25 @@
     font-family: "Nerd";
     src: url('../fonts/firacode.ttf') format('truetype');
 }
+:root {
+    --whitesmoke: #F5F5F5;
+
+    --cm_active: #4E4F57;
+    --cm_inactive: #43444C;
+
+    --btn_danger: #D22D39;
+    --btn_danger_border: #BA3941;
+
+    --btn_primary: #5865F2;
+    --btn_primary_border: #5561C5;
+
+    --btn_success: #287E29;
+    --btn_success_border: #148F49;
+    
+    --btn_link: #36393E;
+    --btn_link_border: #424549;
+}
+
 body {
     color:whitesmoke;
     font-family: 'Roboto';
@@ -85,13 +104,31 @@ header {
     justify-items: center;
     align-items: center;
 }
-.blue_button {
-    background-color: #5865F2;
-}
-.blue_button :hover{
-    background-color: #4654C0;
-}
 
 .all_row {
     grid-column: 1 / -1;
+}
+
+.btn {
+    border-radius: 10px,
+}
+
+.btn_primary {
+    background-color: var(--btn_primary);
+    border: 1px solid var(--btn_primary_border);
+}
+
+.btn_danger {
+    background-color: var(--btn_danger);
+    border: 1px solid var(--btn_danger_border);
+}
+
+.btn_success {
+    background-color: var(--btn_success);
+    border: 1px solid var(--btn_success_border);
+}
+
+.btn_link {
+    background-color: var(--btn_link);
+    border: 1px solid var(--btn_link_border);
 }

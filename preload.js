@@ -10,5 +10,8 @@ contextBridge.exposeInMainWorld('mw', {
 contextBridge.exposeInMainWorld('zapret', {
   checkStatus: () => ipcRenderer.invoke('zapret:checkStatus'),
   remove: () => ipcRenderer.send('zapret:remove'),
-  getAllStrategies: () => ipcRenderer.invoke('zapret:getAllStrategies')
+  getAllStrategies: () => ipcRenderer.invoke('zapret:getAllStrategies'),
+  getSettings: () => ipcRenderer.invoke('zapret:getSettings'),
+  setSettings: () => ipcRenderer.send('zapret:setSettings'),
+  getData: () => ipcRenderer.invoke('zapret:getData')
 })

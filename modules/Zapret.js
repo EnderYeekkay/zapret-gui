@@ -2,9 +2,8 @@
 const { spawn, ChildProcess } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const { EventEmitter } = require('stream');
 const { app } = require('electron/main')
-const events = require('events')
+const { EventEmitter } = require('events')
 const l = console.log
 module.exports = class Zapret extends EventEmitter{
 
@@ -56,9 +55,7 @@ module.exports = class Zapret extends EventEmitter{
         ].join('\\r?\\n'), 
         'mi'
         );
-
-        // Заменяем только первый найденный блок на пустую строку
-        code = code.replace(menuBlockRegex, '');
+        code = code.replace(menuBlockRegex, 'echo {{"gf": "%GameFilterStatus%", "v": "%LOCAL_VERSION%"}}');
 
         // удаляем первый блок if "%1"=="admin" (...) else (...)
         const adminBlockRegex =
@@ -67,6 +64,17 @@ module.exports = class Zapret extends EventEmitter{
         fs.writeFileSync(this._patchedBat, code);
         this.child = this.spawnChild()
         
+    }
+   
+    static isInstalled() {
+        const coreDir = path.join(app.getPath('userData'), 'core');
+        const serviceBat = path.join(coreDir, 'service.bat');
+
+        try {
+            return fs.existsSync(serviceBat);
+        } catch {
+            return false;
+        }
     }
     spawnChild () {
         l('\x1b[32mspawnChild()\x1b[0m')
@@ -99,6 +107,29 @@ module.exports = class Zapret extends EventEmitter{
         })
         return child
     }
+    async getData() {
+        this.isBusy = true
+        this.killChild()
+        this.spawnChild()
+        l('\x1b[1;35mgetData()\x1b[0m')
+        const handler = (chunk) => {
+            if (this.output.includes('Enter')) {
+                l(this.output)
+                this.killChild()
+                this.emit('complete')
+            }
+        }
+
+        this.on('out', handler)
+
+        await EventEmitter.once(this, 'complete')
+        this.child = this.spawnChild()
+        this.off('out', handler)
+        let data = this.output.match(/\{[^{}]*\}/g)[0]
+        if (!data) throw new ZapretError('Empty data')
+        this.isBusy = false
+        return JSON.parse(data)
+    }
     killChild () {
         l('\x1b[31mkillChild()\x1b[0m')
         this.child.kill()
@@ -113,6 +144,18 @@ module.exports = class Zapret extends EventEmitter{
         this.isBusy = true
         this.child.stdin.write(`${value.toString()}\n`)
     }
+    async getLatestVersion(repo) {
+        l('\x1b[1;35mgetLatestVersion()\x1b[0m')
+        const { data: latest } = await axios.get(`https://api.github.com/repos/${repo}/releases/latest`);
+
+        const latestTag = latest.tag_name || latest.name;
+        const latestUrl = latest.assets.find(a => a.name.endsWith('.rar'))?.browser_download_url;
+
+        if (!latestUrl) throw new Error('RAR-файл не найден в релизах.');
+
+        return { tag: latestTag, url: latestUrl };
+    }
+
     async checkStatus() {
         l('\x1b[1;35mcheckStatus()\x1b[0m')
         if (this.isBusy) throw new ZapretError('Queue error')
@@ -128,7 +171,8 @@ module.exports = class Zapret extends EventEmitter{
         }
         this.on('out', handler)
         this.write(3)
-        let res = await events.once(this, 'complete')
+        
+        let res = await EventEmitter.once(this, 'complete')
         this.child = this.spawnChild()
         this.off('out', handler)
         this.isBusy = false
@@ -145,7 +189,7 @@ module.exports = class Zapret extends EventEmitter{
             if (output.includes('Press any')) this.emit('complete', true)
         }
         this.on('out', handler)
-        let res = await events.once(this, 'complete')
+        let res = await EventEmitter.once(this, 'complete')
         this.off('out', handler)
         this.isBusy = false
     }
@@ -164,7 +208,7 @@ module.exports = class Zapret extends EventEmitter{
         };
         this.on('out', handler);
         this.write(1)
-        let res = await events.once(this, 'complete');
+        let res = await EventEmitter.once(this, 'complete');
 
         this.off('out', handler);
         this.child = this.spawnChild()

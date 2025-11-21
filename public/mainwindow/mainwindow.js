@@ -1,6 +1,7 @@
 const l = console.log
 document.addEventListener('DOMContentLoaded', async () => {
     l(zapret)
+    l(await zapret.getData())
     /**
      * @type {string[]}
      */
@@ -25,6 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         let el = $('#strategy')
         let content = ''
         let currentStrategyNum
+
         strategies.find((v, i) => {
             if (v.includes(currentStrategy)) {
                 currentStrategyNum = i + 1
@@ -36,6 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         for (let i = 1; i <= strategies.length; i++) {
             content += /* html */`<option value="${i}" ${ currentStrategyNum == i ? 'selected' : ''}>${i}. ${strategies[i-1]}</option>`
         }
+
         el.html(content)
     }
 })

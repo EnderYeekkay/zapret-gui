@@ -8,14 +8,32 @@ const updateZapret = require('./modules/updateZapret');
 const { ChildProcess } = require('node:child_process');
 const Zapret = require('./modules/Zapret');
 
+const settingsPath = path.join(app.getPath('userData'), 'settings.json')
+let settings = {}
+if (!fs.existsSync(settingsPath)) {
+  let defaultSettings = {
+    gameFilter: false,
+    autoLoad: false,
+    autoUpdate: false,
+    zapretVersion: '0'
+  }
+  fs.writeFileSync(settingsPath, JSON.stringify(defaultSettings))
+}
+settings = JSON.parse(fs.readFileSync(settingsPath))
+
 app.whenReady().then(async () => {
+  if (!Zapret.isInstalled()) await updateZapret()
   const zapret = new Zapret()
   ipcMain.handle('zapret:checkStatus', () => zapret.checkStatus())
   ipcMain.handle('zapret:getAllStrategies', () => zapret.getAllStrategies())
+  ipcMain.handle('zapret:getSettings', () => JSON.parse(fs.readFileSync(settingsPath)))
+  ipcMain.on('zapret:setSettings', (data) => {
+    JSON.parse(data)
+    fs.writeFileSync(settingsPath, data)
+  })
+  ipcMain.handle('zapret:getData', () => zapret.getData())
   // await zapretTest(zapret)
-  app.name = 'Guboril'
 
-  updateZapret()
   console.log(app.getPath('userData'))
   const win = new BrowserWindow({
     width: 800,
@@ -23,12 +41,12 @@ app.whenReady().then(async () => {
     frame: false,
     darkTheme: true,
     movable: true,
+    resizable: false,
     title: 'Губорыл',
     icon: path.join(__dirname, 'public', 'icon.ico'),
     webPreferences: {
         sandbox: false,
         contextIsolation: true,
-        nodeIntegration: true,
         preload: path.join(__dirname, 'preload.js')
     }
   })
