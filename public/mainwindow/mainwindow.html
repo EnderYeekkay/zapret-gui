@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="mainwindow.css">
     <link rel="stylesheet" href="../../node_modules/jquery-ui-dist/jquery-ui.css">
+    <link rel="stylesheet" href="../../node_modules/choices.js/public/assets/styles/choices.min.css">
+    <link rel="stylesheet" href="mainwindow.css">
     <script src="mainwindow.js"></script>
     <script src="../../node_modules/jquery/dist/jquery.min.js"></script>
     <script src="../../node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
+    <script src="../../node_modules/choices.js/public/assets/scripts/choices.min.js"></script>
 </head>
 <body>
     <header>
@@ -24,13 +26,24 @@
         </div>
     </header>
     <div id="content">
-        <div class="all_row" id="service_status_block">
-            <div class="">Service is</div>
-            <div class="" id="service_status">Running</div>
+        <div id="left_column">
+            <div class="container" id="status_block">
+                <div class="">Сервис</div>
+                <div id="service_status">Отключен</div>
+                <button class="btn btn_success to_stop" id="btn_service">
+                    <img src="../images/power.png" class="btn_img18" alt="">
+                    <div id="btn_service_text">Включить</div>
+                </button>
+                <label for="strategy" id="strategy_label">Выбор стратегии</label>
+                <select name="strategy" id="strategy"></select>
+            </div>
         </div>
-        <div class="all_row" id="service_status_block">
-            <select name="strategy" id="strategy"></select>
+        <div id="right_column">
+            <div class="container">
+                asdfasdads
+            </div>
         </div>
+        
     </div>
 </body>
 </html>
