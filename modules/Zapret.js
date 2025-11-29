@@ -265,6 +265,7 @@ module.exports = class Zapret extends EventEmitter{
         return res
     }
     async remove() {
+        l(`\x1b[1;35mremove()\x1b[0m`)
         if (this.isBusy) throw new ZapretError('Queue error')
 
         this.spawnChild()

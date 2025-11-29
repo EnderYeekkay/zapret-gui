@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         disableToStop(btn.children())
         btn.append(dc_loader)
         await zapret.install(selectedStrategyNum + 1)
-
+        changeServiceStyle('active')
         zapret.setSettings({selectedStrategyNum: selectedStrategyNum})
         rollbackToStop(btn.children())
         btn.children('.dc_loader').remove()
@@ -182,6 +182,48 @@ document.addEventListener('DOMContentLoaded', async () => {
         mw.minimize()
     })
 
+    /////////////////////////////////
+    // Отображение вкл/выкл сервиса//
+    /////////////////////////////////
+    /**
+     * Не устанавливает dc_loader!
+     * @param {'active' | 'inactive'} state 
+     */
+    function changeServiceStyle(state) {
+        const btn = $('#btn_service')
+        const status = $('#service_status')
+        const btn_text = $('#btn_service_text')
+
+        switch (state) {
+            case 'active':
+                // Если уже изменён статус
+                if (btn.hasClass('btn_danger')) return false
+                btn
+                .removeClass('btn_success')
+                .addClass('btn_danger')
+                .removeAttr('disabled')
+
+                status.text('Работает')
+                btn_text.text('Остановить')
+                break
+
+            case 'inactive':
+                // Если уже изменён статус
+                if (btn.hasClass('btn_success')) return false
+                btn
+                .removeClass('btn_danger')
+                .addClass('btn_success')
+
+                status.text('Остановлен')
+                btn_text.text('Запустить')
+                break
+            default:
+                throw new Error(`Unable to change styles of services state, wrong argument state: ${state}`)
+                break
+        }
+        return true
+    }
+
     ////////////////////////////
     // Логика вкл/выкл сервиса//
     ////////////////////////////
@@ -190,53 +232,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (btn.hasClass('btn_success') && btn.hasClass('btn_danger')) throw new Error('Btn can\'t have classes btn_success and btn_danger at one time!')
 
         disableToStop(btn.children())
-        btn.append(dc_loader)
 
         ////////////////
         // Отключение //
         ////////////////
         if (btn.hasClass('btn_danger')) {
-            try {
-                l('Отключаем...')
-                l(await zapret.remove())
-            } catch (e) {
-                l(e.stack)
-                return
-            }
-            btn
-            .removeClass('btn_danger')
-            .addClass('btn_success')
-            btn.children('.dc_loader').remove()
+            l('Отключаем...')
+            btn.append(dc_loader)
+            l(await zapret.remove())
+            changeServiceStyle('inactive')
 
-            $('#service_status').text('Остановлен')
-            $('#btn_service_text').text('Запустить')
-
-        //////////////
-        // включение//
-        //////////////
+        ///////////////
+        // включение //
+        ///////////////
         } else if (btn.hasClass('btn_success')) {
-            try {
-                l('Включаем стратегию: ')
-                l(await zapret.install(selectedStrategyNum + 1))
-            } catch (e) {
-                l(e.stack)
-                return
-            }
-            btn
-            .removeClass('btn_success')
-            .addClass('btn_danger')
-            .removeAttr('disabled')
-            .remove('dc_loader')
-            btn.children('.dc_loader').remove()
-
-            $('#service_status').text('Работает')
-            $('#btn_service_text').text('Остановить')
+            l('Включаем стратегию: ')
+            btn.append(dc_loader)
+            l(await zapret.install(selectedStrategyNum + 1))
+            changeServiceStyle('active')
 
         } else throw new Error('Btn doesn\'t have any compatible classes :C')
 
         ////////////////////////////////////
         // Возвращение исходных состояний //
         ////////////////////////////////////
+        btn.children('.dc_loader').remove()
         rollbackToStop(btn.children())
     })
 
