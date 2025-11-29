@@ -523,6 +523,7 @@ header {
 
 }
 .notify_container {
+    z-index: 100;
     position: fixed;
     width: 360px;
     right: 10px;
@@ -616,5 +617,5 @@ header {
     margin-bottom: 10px;
 }
 #core_block_controller > * {
-    width: calc(42% - 5px);
+    width: calc(50% - 5px);
 }

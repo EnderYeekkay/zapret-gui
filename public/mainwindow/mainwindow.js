@@ -365,7 +365,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         l('Открытие папки ядра')
         zapret.openCoreFolder()
     })
-    
     mw.uwu()
 })
 

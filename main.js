@@ -3,6 +3,7 @@ const { app, BrowserWindow, webFrame} = require('electron/main')
 const path = require('node:path')
 const fs = require('fs');
 const updateZapret = require('./modules/updateZapret');
+const {execSync, exec} = require('child_process')
 /////////////////////////////
 // Убрать мусор из консоли //
 /////////////////////////////
@@ -82,6 +83,14 @@ function setSettings(data) {
 
 
 app.whenReady().then(async () => {
+  // if (warpFix.checkWarp()) warpFix.addToExcludedHostsList()
+  const warpPath = "C:\\Program Files\\Cloudflare\\Cloudflare WARP\\warp-cli.exe"
+  if (fs.existsSync(warpPath)) {
+    l(`${warpPath} tunnel host add`)
+    execSync(`"${warpPath}" tunnel host add "api.github.com"`)
+    execSync('sc stop "CloudflareWARP"')
+    setTimeout(() => exec('sc start "CloudflareWARP"'), 2000)
+  }
   if (!Zapret.isInstalled()) await updateZapret()
   const zapret = new Zapret()
   const latestVersion = await zapret.getLatestVersion()
