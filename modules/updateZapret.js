@@ -1,19 +1,19 @@
-const { createExtractorFromData } = require('node-unrar-js');
-const axios = require('axios');
-const path = require('path');
-const { app } = require('electron/main');
-const fs = require('fs');
+const { createExtractorFromData } = require('node-unrar-js')
+const axios = require('axios')
+const path = require('path')
+const { app } = require('electron/main')
+const fs = require('fs')
+const { log } = require('console')
 
+const repo = 'Flowseal/zapret-discord-youtube'
+const userData = app.getPath('userData')
+const destDir = path.join(userData, 'core')
+const rarPath = path.join(destDir, 'zapret.rar')
+const settingsPath = path.join(userData, 'settings.json')
 module.exports = async function updateZapret() {
-    const repo = 'Flowseal/zapret-discord-youtube';
-    const userData = app.getPath('userData');
-    const destDir = path.join(userData, 'core');
-    const rarPath = path.join(destDir, 'zapret.rar');
-    const settingsPath = path.join(userData, 'settings.json');
-
     if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
 
-    console.log('🔍 Checking zapret updates...');
+    console.log('🔍 Checking zapret updates...')
 
     // Load settings.json
     let settings = {};
@@ -46,7 +46,7 @@ module.exports = async function updateZapret() {
     console.log(`⬇️ Downloading new zapret version: ${latestTag}`);
 
     // 3. Download RAR
-    const response = await axios.get(latestUrl, { responseType: 'arraybuffer' });
+    const response = await ghRequest(latestUrl, { responseType: 'arraybuffer' });
     const rarData = new Uint8Array(response.data);
     fs.writeFileSync(rarPath, rarData);
 
@@ -75,4 +75,17 @@ module.exports = async function updateZapret() {
     console.log(`✅ zapret updated to ${latestTag}`);
 
     return 0;
+    async function ghRequest(url, options = {}) {
+        const token = JSON.parse(fs.readFileSync(settingsPath))?.GH_TOKEN
+        const headers = options.headers || {}
+
+        if (typeof token == 'string') {
+            log('PAT detected')
+            headers['Authorization'] = `token ${token}`
+            headers['User-Agent'] = 'Guboril'
+        }
+
+        const res = await axios.get(url, { ...options, headers })
+        return res
+    }
 };

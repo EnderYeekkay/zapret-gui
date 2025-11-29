@@ -10,6 +10,7 @@
   "dependencies": {
     "axios": "^1.13.2",
     "choices.js": "^11.1.0",
+    "dotenv": "^17.2.3",
     "jquery": "^3.7.1",
     "jquery-ui-dist": "^1.13.3",
     "node-unrar-js": "^2.0.2"

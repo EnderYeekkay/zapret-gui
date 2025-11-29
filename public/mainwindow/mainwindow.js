@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     /////////////////////////////////
     /**
      * Не устанавливает dc_loader!
-     * @param {'active' | 'inactive'} state 
+     * @param {'active' | 'inactive' | 'uninstalled'} state 
      */
     function changeServiceStyle(state) {
         const btn = $('#btn_service')
@@ -205,6 +205,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 status.text('Работает')
                 btn_text.text('Остановить')
+                $('#strategy').removeAttr('disabled')
                 break
 
             case 'inactive':
@@ -216,6 +217,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 status.text('Остановлен')
                 btn_text.text('Запустить')
+                $('#strategy').removeAttr('disabled')
+                break
+            case 'uninstalled':
+                // Если уже изменён статус
+                if (btn.is(':disabled')) return false
+
+                btn.attr('disabled', 'disabled')
+                btn.removeClass('btn_success')
+                btn.addClass('btn_danger')
+                
+                status.text('Не установлен')
+                btn_text.text('Запустить')
+                $('#strategy').attr('disabled', 'disabled')
                 break
             default:
                 throw new Error(`Unable to change styles of services state, wrong argument state: ${state}`)
@@ -284,11 +298,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     $(choices.containerOuter.element).addClass('to_stop')
     function disableToStop(children) {
         $('.to_stop').attr('disabled', 'disabled')
+        $('body').css('cursor', 'progress')
         if (children) children.css('opacity', 0)
         choices.disable()
     }
     function rollbackToStop(children) {
         $('.to_stop').each((_, el) => $(el).removeAttr('disabled'))
+        $('body').css('cursor', 'default')
         if (children) children.css('opacity', '')
         choices.enable()
     }
@@ -360,7 +376,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.children('.dc_loader').remove()
         rollbackToStop(btn.children())
     })
+    /**
+     * 
+     * @param {'installed' | 'uninstalled'} state 
+     */
+    function changeCoreVersionStyles(state) {
+        switch (state) {
+            case 'installed':
+                changeServiceStyle('inactive')
+                $('#btn_update_core_static').css('display', '')
+                $('#btn_delete_core').css('display', '')
+                $('#btn_install_core').css('display', 'none')
+                $('#btn_install_core').attr('disabled', 'disabled')
+                break
+            case 'uninstalled':
+                changeServiceStyle('uninstalled')
+                $('#btn_update_core_static').css('display', 'none')
+                $('#btn_delete_core').css('display', 'none')
+                $('#btn_install_core').css('display', '')
+                $('#btn_install_core').removeAttr('disabled')
+                break
 
+            default:
+                throw new Error(`Unable to change styles of core version state, wrong argument state: ${state}`)
+                break
+        }
+    }
     ///////////////////////////
     // Uninstall Core Button //
     ///////////////////////////
@@ -368,14 +409,38 @@ document.addEventListener('DOMContentLoaded', async () => {
         const btn = $(this)
         const children = btn.children()
 
-        l('Удаления ядра запущено...')
         disableToStop(children)
         btn.append(dc_loader)
 
+        l('Остонавливаем сервис...')
+        await zapret.remove()
+        l('Удаление ядра запущено...')
         let res = await zapret.uninstallCore()
-        if (res) sendNotify({title: 'Ядро успешно удалено!', content: ''})
-        btn.children('.dc_loader').remove()
+
         rollbackToStop(children)
+        changeCoreVersionStyles('uninstalled')
+        btn.children('.dc_loader').remove()
+
+        if (res) sendNotify({title: 'Ядро успешно удалено!', content: ''})
+    })
+
+    ////////////////////////
+    // Install Core Button//
+    ////////////////////////
+    $('#btn_install_core').on('click', async function() {
+        const btn = $(this)
+        const children = btn.children()
+        disableToStop(children)
+        btn.append(dc_loader)
+
+        l('Установка ядра запущена...')
+        let res = await zapret.updateZapret()
+
+        rollbackToStop(children)
+        changeCoreVersionStyles('installed')
+        btn.children('.dc_loader').remove()
+
+        if (res) sendNotify({title: 'Ядро успешно установлено!', content: ''})
     })
 
     //////////////////////

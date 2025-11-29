@@ -17,28 +17,51 @@ process.stderr.write = (function(write) {
 //////////////////////////////////
 // Сохранение логов main в файл //
 //////////////////////////////////
-
+// Основная папка для логов
 const logDir = path.join(app.getPath('userData'), 'logs')
-if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true })
-const mainLogFile = path.join(logDir, 'main.log')
+// Подпапка для main
+const mainLogDir = path.join(logDir, 'main')
 
-// функция-обёртка для console
+if (!fs.existsSync(mainLogDir)) fs.mkdirSync(mainLogDir, { recursive: true })
+
+// Имя файла по дате
+const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
+const mainLogFile = path.join(mainLogDir, `main-${today}.log`)
+
+// Удаляем старые логи старше N дней
+const DAYS_TO_KEEP = 7
+fs.readdirSync(mainLogDir).forEach(file => {
+  const filePath = path.join(mainLogDir, file)
+  const stat = fs.statSync(filePath)
+  const ageDays = (Date.now() - stat.mtimeMs) / (1000 * 60 * 60 * 24)
+  if (ageDays > DAYS_TO_KEEP) fs.unlinkSync(filePath)
+})
+
+// Обёртка для console
 function wrapConsoleMethod(methodName, filePath) {
   const orig = console[methodName].bind(console)
   console[methodName] = (...args) => {
     try {
-      fs.appendFileSync(filePath, `[${methodName}] ${args.join(' ')}\n`)
-    } catch (e) {
-      // если не получилось писать в файл — игнорируем
-    }
-    orig(...args) // вызываем оригинальный console.log/error/warn
+      const line = args.map(a => {
+        if (typeof a === 'string') return a
+        try {
+          return JSON.stringify(a, null, 2)
+        } catch {
+          return String(a)
+        }
+      }).join(' ')
+      fs.appendFileSync(filePath, `[${new Date().toISOString()}] [${methodName}] ${line}\n`)
+    } catch (e) {}
+    orig(...args)
   }
 }
 
 wrapConsoleMethod('log', mainLogFile)
-wrapConsoleMethod('error', mainLogFile)
 wrapConsoleMethod('warn', mainLogFile)
+wrapConsoleMethod('error', mainLogFile)
+
 const l = console.log
+
 const Zapret = require('./modules/Zapret');
 
 /**
@@ -58,7 +81,8 @@ if (!fs.existsSync(settingsPath)) {
     autoLoad: false,
     autoUpdate: false,
     zapretVersion: '0',
-    selectedStrategyNum: 0
+    selectedStrategyNum: 0,
+    GH_TOKEN: null
   }
   fs.writeFileSync(settingsPath, JSON.stringify(defaultSettings))
 }
@@ -97,7 +121,7 @@ app.whenReady().then(async () => {
   }
   
   if (!Zapret.isInstalled()) await updateZapret()
-  const zapret = new Zapret()
+  let zapret = new Zapret()
   const latestVersion = await zapret.getLatestVersion()
   ipcMain.handle('zapret:checkStatus', () => zapret.checkStatus())
   ipcMain.handle('zapret:getAllStrategies', () => zapret.getAllStrategies())
@@ -118,7 +142,10 @@ app.whenReady().then(async () => {
   ipcMain.handle('zapret:switchGameFilter', () => zapret.switchGameFilter())
 
   ipcMain.handle('zapret:uninstallCore', () => zapret.uninstallCore())
-  ipcMain.handle('zapret:updateZapret', () => updateZapret())
+  ipcMain.handle('zapret:updateZapret', async () => {
+    await updateZapret()
+    zapret = new Zapret()
+  })
   ipcMain.on('zapret:openCoreFolder', () => zapret.openCoreFolder())
 
   // await zapretTest(zapret, 40)

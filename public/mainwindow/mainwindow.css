@@ -616,6 +616,11 @@ header {
     justify-content:space-between;
     margin-bottom: 10px;
 }
-#core_block_controller > * {
+
+#btn_update_core_static, #btn_delete_core{
     width: calc(50% - 5px);
+}
+
+#btn_install_core {
+    width: 100%;
 }
