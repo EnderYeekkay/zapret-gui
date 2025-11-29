@@ -1,5 +1,4 @@
-GUI for zapret-flowseal
-губорыл
+# Губорыл - GUI для Service.bat
 
 # Важно:
 
