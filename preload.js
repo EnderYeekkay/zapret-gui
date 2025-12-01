@@ -24,4 +24,11 @@ contextBridge.exposeInMainWorld('zapret', {
   getSettings: () => ipcRenderer.invoke('zapret:getSettings'),
   setSettings: (settings) => ipcRenderer.send('zapret:setSettings', settings),
   openCoreFolder: () => ipcRenderer.send('zapret:openCoreFolder')
+  
+})
+
+contextBridge.exposeInMainWorld('logger', {
+  log: (...args) => ipcRenderer.send('renderer-log', 'log', ...args),
+  warn: (...args) => ipcRenderer.send('renderer-log', 'warn', ...args),
+  error: (...args) => ipcRenderer.send('renderer-log', 'error', ...args)
 })

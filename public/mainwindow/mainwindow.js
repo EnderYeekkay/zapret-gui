@@ -15,7 +15,29 @@
     }} zapretData
 */
 
+
+// Лог
+const origLog = console.log.bind(console)
+console.log = (...args) => {
+    logger.log('renderer-log', ...args)
+    origLog(...args)
+}
+
+// Предупреждение
+const origWarn = console.warn.bind(console)
+console.warn = (...args) => {
+    logger.warn('renderer-log', ...args)
+    origWarn(...args)
+}
+
+// Ошибка
+const origError = console.error.bind(console)
+console.error = (...args) => {
+    logger.error('renderer-log', ...args)
+    origError(...args)
+}
 const l = console.log
+
 const dc_loader = /* html */`
     <div class="dc_loader">
         <span></span>
@@ -36,6 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         RightBottom: 1
     }
     let notifyCount = 0
+
     /**
      * 
      * @param {{
@@ -104,6 +127,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             position: NotifyPosition.RightBottom
         })
     })
+
+
     /**
      * @type {string[]}
      */
@@ -376,6 +401,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.children('.dc_loader').remove()
         rollbackToStop(btn.children())
     })
+
     /**
      * 
      * @param {'installed' | 'uninstalled'} state 
@@ -402,6 +428,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 break
         }
     }
+
     ///////////////////////////
     // Uninstall Core Button //
     ///////////////////////////
@@ -416,7 +443,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         await zapret.remove()
         l('Удаление ядра запущено...')
         let res = await zapret.uninstallCore()
-
+        zapret.setSettings({gameFilter: false})
+        $('#cb_game_filter').prop('checked', false)
         rollbackToStop(children)
         changeCoreVersionStyles('uninstalled')
         btn.children('.dc_loader').remove()

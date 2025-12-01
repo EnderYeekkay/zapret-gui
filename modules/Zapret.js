@@ -35,39 +35,44 @@ module.exports = class Zapret extends EventEmitter{
      */
     constructor() {
         super()
-        this._patchedBat = path.join(destDir, 'service_patched.bat');
+        if (Zapret.isInstalled())
+        {
+            this._patchedBat = path.join(destDir, 'service_patched.bat');
 
-        // читаем оригинал
-        let code = fs.readFileSync(originalBat, 'utf8');
+            // читаем оригинал
+            let code = fs.readFileSync(originalBat, 'utf8');
 
-        // ########### ПАТЧ .bat ###########
-        // заменяем ВСЕ вызовы start (...) на call (...)
-        code = code.replace(
-            /^\s*start\s+(.*)$/gmi,
-            'call $1'
-        );
-        const menuBlockRegex = new RegExp(
-        [
-            '^echo =========\\s+v!LOCAL_VERSION!\\s+=========$',
-            '^echo 1\\. Install Service$',
-            '^echo 2\\. Remove Services$',
-            '^echo 3\\. Check Status$',
-            '^echo 4\\. Run Diagnostics$',
-            '^echo 5\\. Check Updates$',
-            '^echo 6\\. Switch Game Filter.*$',
-            '^echo 7\\. Switch ipset.*$',
-            '^echo 8\\. Update ipset list$',
-            '^echo 0\\. Exit$'
-        ].join('\\r?\\n'), 
-        'mi'
-        );
-        code = code.replace(menuBlockRegex, 'echo {{"gf": "%GameFilterStatus%", "v": "%LOCAL_VERSION%"}}');
+            // ########### ПАТЧ .bat ###########
+            // заменяем ВСЕ вызовы start (...) на call (...)
+            code = code.replace(
+                /^\s*start\s+(.*)$/gmi,
+                'call $1'
+            );
+            const menuBlockRegex = new RegExp(
+            [
+                '^echo =========\\s+v!LOCAL_VERSION!\\s+=========$',
+                '^echo 1\\. Install Service$',
+                '^echo 2\\. Remove Services$',
+                '^echo 3\\. Check Status$',
+                '^echo 4\\. Run Diagnostics$',
+                '^echo 5\\. Check Updates$',
+                '^echo 6\\. Switch Game Filter.*$',
+                '^echo 7\\. Switch ipset.*$',
+                '^echo 8\\. Update ipset list$',
+                '^echo 0\\. Exit$'
+            ].join('\\r?\\n'), 
+            'mi'
+            );
+            code = code.replace(menuBlockRegex, 'echo {{"gf": "%GameFilterStatus%", "v": "%LOCAL_VERSION%"}}');
 
-        // удаляем первый блок if "%1"=="admin" (...) else (...)
-        const adminBlockRegex =
-            /if\s+"%1"=="admin"\s*\([\s\S]*?\)\s*else\s*\([\s\S]*?\)/i;
-        code = code.replace(adminBlockRegex, '');
-        fs.writeFileSync(this._patchedBat, code);
+            // удаляем первый блок if "%1"=="admin" (...) else (...)
+            const adminBlockRegex =
+                /if\s+"%1"=="admin"\s*\([\s\S]*?\)\s*else\s*\([\s\S]*?\)/i;
+            code = code.replace(adminBlockRegex, '');
+            fs.writeFileSync(this._patchedBat, code);
+        } else {
+            l('Warning! No core has been detected!')
+        }
         this.child = this.spawnChild()
         
     }

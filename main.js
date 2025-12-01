@@ -1,66 +1,44 @@
+require('dotenv').config()
 const { ipcMain, webFrameMain } = require('electron');
 const { app, BrowserWindow, webFrame} = require('electron/main')
 const path = require('node:path')
 const fs = require('fs');
 const updateZapret = require('./modules/updateZapret');
 const {execSync, exec} = require('child_process')
+const { version } = require(path.join(__dirname, 'package.json'))
+
+// Парсинг аргументов
+console.log('ARGV: ' + process.argv)
+let debug = process.argv.includes('--inspect') || process.argv.includes('-i')
+if (process.argv.includes('--version') || process.argv.includes('-v')) {
+  console.log(`Version: v${version}`)
+  app.quit()
+}
+if (process.argv.includes('--tray') || process.argv.includes('-t'))
+{
+
+}
+if (process.platform !== 'win32') {
+  throw new Error(`Это приложение работает только на Windows. Обнаружено: ${process.platform}`);
+}
+
 /////////////////////////////
 // Убрать мусор из консоли //
 /////////////////////////////
-process.stderr.write = (function(write) {
-  return function(string, encoding, fd) {
-    if (string.includes('Request Autofill')) return
-    write.apply(process.stderr, arguments)
-  }
-})(process.stderr.write)
-
+// process.stderr.write = (function(write) {
+//   return function(string, encoding, fd) {
+//     if (string.includes('Request Autofill')) return
+//     write.apply(process.stderr, arguments)
+//   }
+// })(process.stderr.write)
 //////////////////////////////////
 // Сохранение логов main в файл //
 //////////////////////////////////
-// Основная папка для логов
-const logDir = path.join(app.getPath('userData'), 'logs')
-// Подпапка для main
-const mainLogDir = path.join(logDir, 'main')
-
-if (!fs.existsSync(mainLogDir)) fs.mkdirSync(mainLogDir, { recursive: true })
-
-// Имя файла по дате
-const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
-const mainLogFile = path.join(mainLogDir, `main-${today}.log`)
-
-// Удаляем старые логи старше N дней
-const DAYS_TO_KEEP = 7
-fs.readdirSync(mainLogDir).forEach(file => {
-  const filePath = path.join(mainLogDir, file)
-  const stat = fs.statSync(filePath)
-  const ageDays = (Date.now() - stat.mtimeMs) / (1000 * 60 * 60 * 24)
-  if (ageDays > DAYS_TO_KEEP) fs.unlinkSync(filePath)
-})
-
-// Обёртка для console
-function wrapConsoleMethod(methodName, filePath) {
-  const orig = console[methodName].bind(console)
-  console[methodName] = (...args) => {
-    try {
-      const line = args.map(a => {
-        if (typeof a === 'string') return a
-        try {
-          return JSON.stringify(a, null, 2)
-        } catch {
-          return String(a)
-        }
-      }).join(' ')
-      fs.appendFileSync(filePath, `[${new Date().toISOString()}] [${methodName}] ${line}\n`)
-    } catch (e) {}
-    orig(...args)
-  }
-}
-
-wrapConsoleMethod('log', mainLogFile)
-wrapConsoleMethod('warn', mainLogFile)
-wrapConsoleMethod('error', mainLogFile)
-
+const {initMainLogger, initRendererLogger}= require('./modules/logger')
+initMainLogger()
+initRendererLogger()
 const l = console.log
+
 
 const Zapret = require('./modules/Zapret');
 
@@ -107,6 +85,20 @@ function setSettings(data) {
 
 
 app.whenReady().then(async () => {
+  const loadingWin = new BrowserWindow({
+    width: 300,
+    height: 350,
+    frame: false,
+    darkTheme: true,
+    movable: false,
+    resizable: false,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+  })
+  loadingWin.loadFile('./public/loadingWin/loadingWin.html')
+  if (debug == 1) {
+    loadingWin.webContents.openDevTools({ mode: 'detach' }); // отдельное окно
+  }
   // if (warpFix.checkWarp()) warpFix.addToExcludedHostsList()
   const warpPath = "C:\\Program Files\\Cloudflare\\Cloudflare WARP\\warp-cli.exe"
   if (fs.existsSync(warpPath)) {
@@ -136,6 +128,7 @@ app.whenReady().then(async () => {
 
   ipcMain.handle('zapret:getSettings', () => getSettings())
   ipcMain.on('zapret:setSettings', (_, data) => setSettings(data))
+  ipcMain.handle('zapret:rendererLog', () => {})
 
   ipcMain.handle('zapret:install', (_, strategy) => zapret.install(strategy))
   ipcMain.handle('zapret:remove', () => zapret.remove())
@@ -172,9 +165,14 @@ app.whenReady().then(async () => {
 
   win.hide()
   setTimeout(() => win.show(), 5000) // Start at any cost!!!!1
-  ipcMain.once('uwu', () => win.show())
+  ipcMain.once('uwu', () => {
+    loadingWin.close()
+    win.show()
+  })
   win.loadFile('./public/mainwindow/mainwindow.html')
-  win.webContents.openDevTools({ mode: 'detach' }); // отдельное окно
+  if (debug == 1) {
+    win.webContents.openDevTools({ mode: 'detach' }); // отдельное окно
+  }
   app.on('activate', () => {
     
   })
