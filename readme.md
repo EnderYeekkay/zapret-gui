@@ -39,7 +39,7 @@
 ## Чистое удаление:
 
 * Удалить ядро нажатием кнопки удалить в приложении
+* Выполнить команду `schtasks /Delete /TN "Guboril" /F` или отключить автозагрузку
 * Удалить само приложение
 * Удалить службу zapret в приложении Службы
 * Выполнить команду `warp-cli tunnel host remove api.github.com`, для проверки: `warp-cli tunnel host list`.
-* Выполнить команду `schtasks /Delete /TN "Guboril" /F`
