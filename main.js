@@ -1,6 +1,6 @@
 require('dotenv').config()
 const { ipcMain, webFrameMain, Tray, Menu, shell, Notification } = require('electron');
-const { app, BrowserWindow, webFrame} = require('electron/main')
+const { app, dialog, BrowserWindow, webFrame} = require('electron/main')
 const path = require('node:path')
 const fs = require('fs');
 const updateZapret = require('./modules/updateZapret');
@@ -8,7 +8,12 @@ const { execSync, exec } = require('child_process')
 const { version } = require(path.join(__dirname, 'package.json'))
 const { createTask, deleteTask, checkTask } = require('./modules/scheduler.ts')
 const {saveLogsArchive} = require('./modules/saveLogs.ts')
-
+if (!app.requestSingleInstanceLock()) {
+  app.once('ready', () => {
+    dialog.showErrorBox('Ошибка удвоения', 'Нельзя запустить более одного Губорыла!')
+    app.quit()
+  })
+}
 // Парсинг аргументов
 console.log('ARGV: ' + process.argv)
 const debug = process.argv.includes('--inspect') || process.argv.includes('-i')
