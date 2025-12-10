@@ -1,5 +1,4 @@
-require('dotenv').config()
-const { ipcMain, webFrameMain, Tray, Menu, shell, Notification } = require('electron');
+const { ipcMain, webFrameMain, Tray, Menu, shell, Notification, nativeImage } = require('electron');
 const { app, dialog, BrowserWindow, webFrame} = require('electron/main')
 const path = require('node:path')
 const fs = require('fs');
@@ -7,21 +6,18 @@ const updateZapret = require('./modules/updateZapret');
 const { execSync, exec } = require('child_process')
 const { version } = require(path.join(__dirname, 'package.json'))
 const { createTask, deleteTask, checkTask } = require('./modules/scheduler.ts')
-const {saveLogsArchive} = require('./modules/saveLogs.ts')
+const { saveLogsArchive } = require('./modules/saveLogs.ts')
+const myNotifcations = require('./modules/myNotifcations.ts')
+const { setSettings, getSettings } = require('./modules/settings.ts')
+const { debug, run_only_tray } = require('./modules/argsParser')
+const { zapretTest } = require('./tests/zapretTest.ts')
+const { initializeTray } = require('./modules/tray.ts')
 if (!app.requestSingleInstanceLock()) {
   app.once('ready', () => {
     dialog.showErrorBox('Ошибка удвоения', 'Нельзя запустить более одного Губорыла!')
     app.quit()
   })
 }
-// Парсинг аргументов
-console.log('ARGV: ' + process.argv)
-const debug = process.argv.includes('--inspect') || process.argv.includes('-i')
-if (process.argv.includes('--version') || process.argv.includes('-v')) {
-  console.log(`Version: v${version}`)
-  app.quit()
-}
-const run_only_tray = process.argv.includes('--tray') || process.argv.includes('-t')
 
 if (process.platform !== 'win32') {
   throw new Error(`Это приложение работает только на Windows. Обнаружено: ${process.platform}`);
@@ -46,48 +42,21 @@ const l = console.log
 
 
 const Zapret = require('./modules/Zapret');
+const { EventEmitter } = require('node:stream');
 
-/**
-    @typedef {{
-        gameFilter: boolean,
-        autoUpdate: boolean,
-        zapretVersion: string,
-        selectedStrategyNum: number,
-        GH_TOKEN: null | string
-    }} Settings
-*/
-const settingsPath = path.join(app.getPath('userData'), 'settings.json')
-let settings = {}
-if (!fs.existsSync(settingsPath)) {
-  let defaultSettings = {
-    gameFilter: false,
-    autoUpdate: false,
-    zapretVersion: '0',
-    selectedStrategyNum: 0,
-    GH_TOKEN: null
-  }
-  fs.writeFileSync(settingsPath, JSON.stringify(defaultSettings))
-}
-settings = JSON.parse(fs.readFileSync(settingsPath))
-
-/**
- * 
- * @returns { Settings }
- */
-function getSettings() {
-  return JSON.parse(fs.readFileSync(settingsPath))
-}
-/**
- * 
- * @param { Settings } data 
- */
-function setSettings(data) {
-    let old_settings = getSettings()
-    let new_settings = {...old_settings, ...data}
-    fs.writeFileSync(settingsPath, JSON.stringify(new_settings))
-}
-
+if (debug) app.disableHardwareAcceleration() // Да ну нахуй эти VIDEO_SCHEDULER_INTERNAL_ERROR
 app.whenReady().then(async () => {
+  process.on('uncaughtException', (err) => {
+    l(err.stack)
+    myNotifcations.sendUENotify(err)
+    app.exit(1)
+  })
+  process.on('unhandledRejection', (err) => {
+    l(err.stack)
+    myNotifcations.sendURNotify(err)
+  })
+
+
   ////////////////
   // LoadingWin //
   ////////////////
@@ -106,24 +75,21 @@ app.whenReady().then(async () => {
   })
   loadingWin.loadFile('./public/loadingWin/loadingWin.html')
   if (run_only_tray) loadingWin.hide()
-  if (debug == 1) {
+  if (debug) {
     loadingWin.webContents.openDevTools({ mode: 'detach' }); // отдельное окно
   }
 
   /////////////
   // WarpFix //
   /////////////
-  const warpPath = "C:\\Program Files\\Cloudflare\\Cloudflare WARP\\warp-cli.exe"
-  if (fs.existsSync(warpPath)) {
-    if (`"${warpPath}" tunnel host add "api.github.com"`) {
+    if (execSync('warp-cli tunnel host list').includes('api.github.com')) {
       l('WarpFix is already installed')
     } else {
-      execSync(`"${warpPath}" tunnel host add "api.github.com"`)
+      execSync(`warp-cli tunnel host add "api.github.com"`)
       execSync('sc stop "CloudflareWARP"')
       setTimeout(() => exec('sc start "CloudflareWARP"'), 2000)
       l('WarpFix has been installed.')
     }
-  }
   
   //////////////
   // Core API //
@@ -146,8 +112,17 @@ app.whenReady().then(async () => {
   ipcMain.on('zapret:setSettings', (_, data) => setSettings(data))
   ipcMain.handle('zapret:rendererLog', () => {})
 
-  ipcMain.handle('zapret:install', (_, strategy) => zapret.install(strategy))
-  ipcMain.handle('zapret:remove', () => zapret.remove())
+  ipcMain.handle('zapret:install', (_, strategy) => {
+    return zapret.install(strategy).then(() => {
+      if (!win.isVisible()) myNotifcations.sendServiceOnNotify()
+    })
+  })
+
+  ipcMain.handle('zapret:remove', () => {
+    return zapret.remove().then(() => {
+      if (!win.isVisible()) myNotifcations.sendServiceOffNotify()
+    })
+  })
   ipcMain.handle('zapret:switchGameFilter', () => zapret.switchGameFilter())
 
   ipcMain.handle('zapret:uninstallCore', () => zapret.uninstallCore())
@@ -187,8 +162,10 @@ app.whenReady().then(async () => {
   })
   ipcMain.on('save_logs', () => saveLogsArchive(win))
   win.hide()
-  ipcMain.once('uwu', () => {
+
+  ipcMain.once('uwu', async () => {
     l('Uwu!')
+    initializeTray(win, zapret)
     if (!run_only_tray) {
       // setTimeout(() => win.show(), 5000) // Start at any cost!!!!1
       loadingWin.close()
@@ -196,7 +173,7 @@ app.whenReady().then(async () => {
     }
   })
   win.loadFile('./public/mainwindow/mainwindow.html')
-  if (debug == 1) {
+  if (debug) {
     win.webContents.openDevTools({ mode: 'detach' }); // отдельное окно
   }
 
@@ -211,48 +188,4 @@ app.whenReady().then(async () => {
   })
 
   if (run_only_tray) loadingWin.close()
-  const tray = new Tray(path.join(__dirname, 'public', 'icon.ico'))
-  tray.on('double-click', (event, bounds) => {
-    l('double-click on tray')
-    win.show()
-  })
-  const menu = Menu.buildFromTemplate([
-    { label: 'Открыть', click: () => win.show() },
-    { type: 'separator' },
-    { label: 'Выход', click: () => app.quit() }
-  ])
-
-  tray.setContextMenu(menu)
-  tray.on('click', (event, bounds) => {
-    tray.popUpContextMenu(menu)
-  })
 })
-
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
-
-/**
- * 
- * @param {Zapret} zapret 
- * @param {number} iterations
- */
-async function zapretTest(zapret, iterations = 20) {
-  let startTime = Date.now()
-  for (let i = 0; i < iterations; i++) {
-    l(`======================= {Iteration: ${i+1}} =======================`)
-    let n = getRandomInt(6)
-    if (n == 0) await zapret.getAllStrategies()
-    if (n == 1) await zapret.checkStatus()
-    if (n == 2) await zapret.getData()
-    if (n == 3) await zapret.install(7)
-    if (n == 4) await zapret.remove()
-    if (n == 5) await zapret.switchGameFilter()
-  }
-  l(`======================= {Test Passed (${Math.round((Date.now() - startTime)/1000)}s)} =======================`)
-}
-function getRandomInt(max) {
-  return Math.floor(Math.random() * max);
-}

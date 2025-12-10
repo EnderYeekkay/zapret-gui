@@ -1,11 +1,12 @@
 /** @typedef {import("choices.js").default} Choices */
 /**
     @typedef {{
-        gameFilter: boolean,
-        autoLoad: boolean,
-        autoUpdate: boolean,
-        zapretVersion: string,
+        gameFilter: boolean
+        autoLoad: boolean
+        autoUpdate: boolean
+        zapretVersion: string
         selectedStrategyNum: number
+        notifications: boolean
     }} Settings
 */
 /**
@@ -321,19 +322,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         searchPlaceholderValue: "Введите название",
     })
     $(choices.containerOuter.element).addClass('to_stop')
+
+    /////////////
+    // To Stop //
+    /////////////
     function disableToStop(children) {
+        tray_event.sendDisableToStop()
         $('.to_stop').attr('disabled', 'disabled')
         $('body').css('cursor', 'progress')
         if (children) children.css('opacity', 0)
         choices.disable()
     }
     function rollbackToStop(children) {
+        tray_event.sendRollbackToStop()
         $('.to_stop').each((_, el) => $(el).removeAttr('disabled'))
         $('body').css('cursor', 'default')
         if (children) children.css('opacity', '')
         choices.enable()
     }
-
+    tray_event.onDisableToStop(disableToStop)
+    tray_event.onRollbackToStop((_, data) => {
+        if (data) {
+            changeServiceStyle('active')
+        } else {
+            changeServiceStyle('inactive')
+        }
+        rollbackToStop()
+    })
     ////////////////
     // GameFilter //
     ////////////////
@@ -489,13 +504,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('#cb_auto_start').prop('checked', await scheduler_api.checkTask())
     $('#cb_auto_start').on('change', async function () {
         const btn = $(this)
+        let res
         if (btn.is(':checked')) {
-            await scheduler_api.createTask()
+            res = await scheduler_api.createTask()
+            if (!res) btn.prop('checked', false)
         } else {
-            await scheduler_api.deleteTask()
+            res = await scheduler_api.deleteTask()
+            if (!res) btn.prop('checked', true)
         }
         
     }) 
+
+    //////////////////////////
+    // Notifications Button //
+    //////////////////////////
+    $('#cb_notifications').prop('checked', settings.notifications)
+    $('#cb_notifications').on('change', function() { zapret.setSettings({notifications: $(this).is(':checked')})})
 
     ////////////////////////
     // Open GitHub button //

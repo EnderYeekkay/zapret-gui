@@ -21,8 +21,14 @@ module.exports = class Zapret extends EventEmitter{
      */
     child 
 
-    isBusy = false
-
+    _isBusy = false
+    get isBusy() {
+        return this._isBusy
+    }
+    set isBusy(value) {
+        this._isBusy = value
+        if (!value) this.emit('not_busy')
+    }
     /**
      * Вывод **stdout**
      * @type {string}
@@ -323,6 +329,15 @@ module.exports = class Zapret extends EventEmitter{
         }
         Zapret.setSettings({zapretVersion: '0'})
         return true
+    }
+    async queue(callback, ...args) {
+        callback = callback.bind(this)
+        if (!this.isBusy) {
+            return await callback(...args)
+        } else {
+            await EventEmitter.once(this, 'not_busy')
+            return await callback(...args)
+        }
     }
 }
 

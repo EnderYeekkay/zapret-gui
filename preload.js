@@ -29,6 +29,13 @@ contextBridge.exposeInMainWorld('zapret', {
   
 })
 
+contextBridge.exposeInMainWorld('tray_event', {
+   onDisableToStop: (cb) => ipcRenderer.on('disableToStop', cb),
+   onRollbackToStop: (cb) => ipcRenderer.on('rollbackToStop', cb),
+
+   sendDisableToStop: () => ipcRenderer.send('sendDisableToStop'),
+   sendRollbackToStop: () => ipcRenderer.send('sendRollbackToStop')
+})
 contextBridge.exposeInMainWorld('logger', {
   log: (...args) => ipcRenderer.send('renderer-log', 'log', ...args),
   warn: (...args) => ipcRenderer.send('renderer-log', 'warn', ...args),

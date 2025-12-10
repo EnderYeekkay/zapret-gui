@@ -42,6 +42,19 @@
     --btn_primary_disabled_border: #343A70;
 
 
+    --btn_secondary: #4F545C;
+    --btn_secondary_border: #3A3E44;
+
+    --btn_secondary_hover: #44484F;
+    --btn_secondary_hover_border: #2F3338;
+
+    --btn_secondary_active: #393C42;
+    --btn_secondary_active_border: #23262A;
+
+    --btn_secondary_disabled: #2F3136;
+    --btn_secondary_disabled_border: #1F2124;
+
+
     --btn_success: #287E29;
     --btn_success_border: #148F49;
 

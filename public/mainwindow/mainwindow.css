@@ -206,6 +206,32 @@ header {
 }
 
 /* ---------------------------------------------------- */
+/*                     SECONDARY                        */
+/* ---------------------------------------------------- */
+.btn_secondary {
+    background-color: var(--btn_secondary);
+    border: 1px solid var(--btn_secondary_border);
+}
+
+.btn_secondary:hover,
+.btn_secondary:focus {
+    background-color: var(--btn_secondary_hover);
+    border-color: var(--btn_secondary_hover_border);
+    outline: none;
+}
+
+.btn_secondary:active {
+    background-color: var(--btn_secondary_active);
+    border-color: var(--btn_secondary_active_border);
+}
+
+.btn_secondary.disabled,
+.btn_secondary:disabled {
+    background-color: var(--btn_secondary_disabled);
+    border-color: var(--btn_secondary_disabled_border);
+}
+
+/* ---------------------------------------------------- */
 /*                       LINK                           */
 /* ---------------------------------------------------- */
 .btn_link {
