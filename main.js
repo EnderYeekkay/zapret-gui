@@ -39,15 +39,15 @@ const { EventEmitter } = require('node:stream');
 if (debug) app.disableHardwareAcceleration() // Да ну нахуй эти VIDEO_SCHEDULER_INTERNAL_ERROR
 app.whenReady().then(async () => {
   process.on('uncaughtException', (err) => {
+    err.cause
     l(err.stack)
     myNotifcations.sendUENotify(err)
-    app.exit(1)
+    if (!err.stack.includes('#CONTINUE_WORKING')) app.exit(1)
   })
   process.on('unhandledRejection', (err) => {
     l(err.stack)
     myNotifcations.sendURNotify(err)
   })
-
 
   ////////////////
   // LoadingWin //
@@ -91,10 +91,14 @@ app.whenReady().then(async () => {
   ipcMain.on('zapret:setSettings', (_, data) => setSettings(data))
   ipcMain.handle('zapret:rendererLog', () => {})
 
-  ipcMain.handle('zapret:install', (_, strategy) => {
-    return zapret.install(strategy).then(() => {
-      if (!win.isVisible()) myNotifcations.sendServiceOnNotify()
-    })
+  ipcMain.handle('zapret:install', async (_, strategy) => {
+    const res = await zapret.install(strategy)
+    if (!win.isVisible()) myNotifcations.sendServiceOnNotify()
+    if (!res[0]) {
+      myNotifcations.sendUENotify({stack: zapret.output})
+      l(`Service installation went wrong: ${zapret.output}`)
+    }
+    return res
   })
 
   ipcMain.handle('zapret:remove', () => {

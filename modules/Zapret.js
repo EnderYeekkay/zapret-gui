@@ -113,6 +113,9 @@ module.exports = class Zapret extends EventEmitter{
     spawnChild () {
         l('\x1b[32mspawnChild()\x1b[0m')
         this.output = ''
+        /**
+         * @type {ChildProcess}
+         */
         let child = spawn(
                 'cmd.exe',
             ['/c', this._patchedBat],
@@ -124,7 +127,9 @@ module.exports = class Zapret extends EventEmitter{
         child.stdout.on('data', (chunk) => {
             chunk = chunk.toString()
             if (chunk.includes('Press any key')) {
-                child.stdin.write('\r')
+                child.stdin.write('\r', (err) => {
+                    if (err != null && err != undefined) throw new ZapretError(`#CONTINUE_WORKING\n${err.stack}`)
+                })
             }
             this.output += chunk
             this.emit('out', this.output)
@@ -132,10 +137,15 @@ module.exports = class Zapret extends EventEmitter{
         child.stderr.on('data', (chunk) => {
             chunk = chunk.toString()
             if (chunk.includes('Press any key')) {
-                child.stdin.write('\r')
+                child.stdin.write('\r', (err) => {
+                    if (err != null && err != undefined) throw new ZapretError(`#CONTINUE_WORKING\n${err.stack}`)
+                })
             }
             this.output += chunk
             this.emit('out', this.output)
+        })
+        child.stdin.on('error', (err) => {
+            l(`Stdin err:\n${err}`)
         })
         child.on('exit', (msg) => {
             console.log('Child exited with msg: ' + msg)
@@ -264,7 +274,7 @@ module.exports = class Zapret extends EventEmitter{
         this.off('out', handler)
         const resHandler = (output) => {
             if (output.includes('successfully')) this.emit('complete', true)
-            if (output.includes('denied') || output.includes('Invalid')) this.emit('complete', false)
+            if (output.includes('denied') || output.includes('Invalid') || output.includes('STOP_PENDING')) this.emit('complete', false)
         }
 
         this.write(strategyNum)
