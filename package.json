@@ -1,11 +1,12 @@
 {
   "name": "guboril",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "main": "main.js",
   "description": "GUI for Zapret Flowseal",
   "scripts": {
     "start": "npx electron main.js",
-    "build": "electron-packager . Guboril --platform=win32 --arch=x64 --overwrite --out=dist --icon=public/icon.ico --win32metadata.requested-execution-level=requireAdministrator"
+    "build": "electron-packager . Guboril --platform=win32 --arch=x64 --overwrite --out=dist --icon=public/icon.ico --win32metadata.requested-execution-level=requireAdministrator --ignore=modules/MakeInstaller\\.iss",
+    "mi": "cmd /c \"\"A:\\Programs\\Inno Setup 6\\ISCC.exe\" \"modules\\MakeInstaller.iss\"\""
   },
   "dependencies": {
     "archiver": "^7.0.1",
