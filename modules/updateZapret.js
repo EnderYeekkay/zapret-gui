@@ -1,16 +1,18 @@
-const { createExtractorFromData } = require('node-unrar-js')
-const axios = require('axios')
-const path = require('path')
-const { app } = require('electron/main')
-const fs = require('fs')
-const { log } = require('console')
+import { createExtractorFromData } from 'node-unrar-js'
+import axios from 'axios'
+import path from 'node:path'
+import { app } from 'electron/main'
+import fs from 'node:fs'
+import { log } from 'node:console'
+
 
 const repo = 'Flowseal/zapret-discord-youtube'
 const userData = app.getPath('userData')
 const destDir = path.join(userData, 'core')
 const rarPath = path.join(destDir, 'zapret.rar')
 const settingsPath = path.join(userData, 'settings.json')
-module.exports = async function updateZapret() {
+
+export default async function updateZapret() {
     if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
 
     console.log('🔍 Checking zapret updates...')

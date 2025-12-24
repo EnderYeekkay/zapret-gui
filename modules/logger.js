@@ -1,9 +1,10 @@
-const fs = require('fs')
-const path = require('path')
-const { app, ipcMain } = require('electron')
+import fs from 'node:fs'
+import path from 'node:path'
+import { app, ipcMain } from 'electron'
 
 const logDir = path.join(app.getPath('userData'), 'logs')
-function initMainLogger({ keep = 5 } = {}) {
+
+export function initMainLogger({ keep = 5 } = {}) {
   const mainLogDir = path.join(logDir, 'main')
 
   if (!fs.existsSync(mainLogDir)) fs.mkdirSync(mainLogDir, { recursive: true })
@@ -45,7 +46,7 @@ function initMainLogger({ keep = 5 } = {}) {
     }
   })
 }
-function initRendererLogger({ keep = 5 } = {}) {
+export function initRendererLogger({ keep = 5 } = {}) {
   const logDir = path.join(app.getPath('userData'), 'logs', 'renderer')
   if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true })
 
@@ -74,6 +75,3 @@ function initRendererLogger({ keep = 5 } = {}) {
     // console[level](...args) // дублируем в main консоль
   })
 }
-
-
-module.exports = { initMainLogger, initRendererLogger }

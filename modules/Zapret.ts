@@ -1,12 +1,12 @@
+import { spawn, ChildProcess } from 'node:child_process'
 
-const { spawn, ChildProcess } = require('child_process');
+import fs from 'node:fs'
+import path from 'node:path'
+import { app } from 'electron/main'
+import { shell } from 'electron'
+import { EventEmitter } from 'node:events'
+import axios from 'axios'
 
-const fs = require('fs');
-const path = require('path');
-const { app } = require('electron/main')
-const { shell } = require('electron');
-const { EventEmitter } = require('events')
-const axios = require('axios');
 const l = console.log
 
 const destDir = path.join(app.getPath('userData'), 'core');
@@ -14,12 +14,21 @@ const originalBat = path.join(destDir, 'service.bat');
 const coreDir = path.join(app.getPath('userData'), 'core');
 const settingsPath = path.join(app.getPath('userData'), 'settings.json')
 
-module.exports = class Zapret extends EventEmitter{
+type Settings = {
+  gameFilter: boolean
+  autoUpdate: boolean
+  zapretVersion: string
+  selectedStrategyNum: number
+  notifications: boolean
+  GH_TOKEN: string
+};
+type ZapretData = {
+    gf: string
+    v: string
+}
+export default class Zapret extends EventEmitter{
 
-    /**
-     * @type {ChildProcess}
-     */
-    child 
+    child: ChildProcess
 
     _isBusy = false
     get isBusy() {
@@ -29,17 +38,11 @@ module.exports = class Zapret extends EventEmitter{
         this._isBusy = value
         if (!value) this.emit('not_busy')
     }
-    /**
-     * Вывод **stdout**
-     * @type {string}
-     */
-    output = ''
 
-    _patchedBat
-    /**
-     * 
-     * @param {string} destDir 
-     */
+    output: string = ''
+
+    _patchedBat: string
+
     constructor() {
         super()
         if (Zapret.isInstalled())
@@ -71,6 +74,10 @@ module.exports = class Zapret extends EventEmitter{
             'mi'
             );
             code = code.replace(menuBlockRegex, 'echo {{"gf": "%GameFilterStatus%", "v": "%LOCAL_VERSION%"}}');
+            
+            // удаляем блок CHECK UPDATES целиком
+            const checkUpdatesBlockRegex = /:: CHECK UPDATES =======================[\s\S]*?(?=:: DIAGNOSTICS =========================)/i;
+            code = code.replace(checkUpdatesBlockRegex, '');
 
             // удаляем первый блок if "%1"=="admin" (...) else (...)
             const adminBlockRegex =
@@ -83,19 +90,10 @@ module.exports = class Zapret extends EventEmitter{
         this.child = this.spawnChild()
         
     }
-    /**
-    * 
-    * @returns { Settings }
-    */
-    static getSettings() {
-        return JSON.parse(fs.readFileSync(settingsPath))
+    static getSettings(): Settings {
+        return JSON.parse(fs.readFileSync(settingsPath).toString())
     }
-
-    /**
-    * 
-    * @param { Settings } data 
-    */
-    static setSettings(data) {
+    static setSettings(data: Partial<Settings>) {
         let old_settings = Zapret.getSettings()
         let new_settings = {...old_settings, ...data}
         fs.writeFileSync(settingsPath, JSON.stringify(new_settings))
@@ -324,9 +322,8 @@ module.exports = class Zapret extends EventEmitter{
 
     /**
      * Удалить ядро из статической памяти
-     * @returns {string | boolean}
      */
-    uninstallCore() {
+    uninstallCore(): string | boolean {
         try {
             fs.rmSync(destDir, {
                 recursive: true,
@@ -340,19 +337,19 @@ module.exports = class Zapret extends EventEmitter{
         Zapret.setSettings({zapretVersion: '0'})
         return true
     }
-    async queue(callback, ...args) {
-        callback = callback.bind(this)
-        if (!this.isBusy) {
-            return await callback(...args)
-        } else {
-            await EventEmitter.once(this, 'not_busy')
-            return await callback(...args)
-        }
-    }
+    // async queue(callback, ...args) {
+    //     callback = callback.bind(this)
+    //     if (!this.isBusy) {
+    //         return await callback(...args)
+    //     } else {
+    //         await EventEmitter.once(this, 'not_busy')
+    //         return await callback(...args)
+    //     }
+    // }
 }
 
 class ZapretError extends Error {
-    constructor(message) {
+    constructor(message: any) {
         super(message);          // Передаём сообщение в базовый Error
         this.name = this.constructor.name; // Имя класса как имя ошибки
         if (Error.captureStackTrace) {

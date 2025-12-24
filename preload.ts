@@ -1,6 +1,13 @@
-const path = require('path');
-const { version } = require(path.join(__dirname, 'package.json'))
-const { contextBridge, ipcRenderer } = require('electron');
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { contextBridge, ipcRenderer } from 'electron';
+import pkg from './package.json' with { type: 'json' };
+
+// Эмуляция __dirname в ES-модулях
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const { version } = pkg;
 contextBridge.exposeInMainWorld('mw', {
   version: version,
   closeWindow: () => ipcRenderer.send('close-window'),

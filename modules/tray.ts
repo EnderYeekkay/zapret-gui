@@ -2,7 +2,7 @@ import { ipcMain, nativeImage, BrowserWindow, Tray, Menu, app } from 'electron'
 import type { MenuItemConstructorOptions } from 'electron/main'
 import path from 'path'
 const pr = path.resolve
-import Zapret from './Zapret.js'
+import Zapret from './Zapret.ts'
 import { sendServiceOffNotify, sendServiceOnNotify } from './myNotifcations.ts'
 export async function initializeTray(win: BrowserWindow, zapret: Zapret, publicPath: string) {
     const icon_resize_option = { width: 16, height: 16 }

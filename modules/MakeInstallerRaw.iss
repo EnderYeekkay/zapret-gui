@@ -49,3 +49,58 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall runascurrentuser skipifsilent
+
+[UninstallRun]
+Filename: "{sys}\taskkill.exe"; \
+Parameters: "/IM Guboril.exe /F /T"; \
+Flags: runhidden waituntilterminated; \
+RunOnceId: "KillGuborilProcess"
+
+Filename: "{sys}\taskkill.exe"; \
+Parameters: "/IM winws /F /T"; \
+Flags: runhidden waituntilterminated; \
+RunOnceId: "KillWinwsProcess"
+
+
+Filename: "{sys}\sc.exe"; \
+Parameters: "stop WinDivert"; \
+Flags: runhidden waituntilterminated; \
+RunOnceId: "StopWinDivert"
+
+Filename: "{sys}\sc.exe"; \
+Parameters: "delete WinDivert"; \
+Flags: runhidden waituntilterminated; \
+RunOnceId: "DeleteWinDivert"
+
+
+Filename: "{sys}\sc.exe"; \
+Parameters: "stop zapret"; \
+Flags: runhidden waituntilterminated; \
+RunOnceId: "StopZapret"
+
+Filename: "{sys}\sc.exe"; \
+Parameters: "delete zapret"; \
+Flags: runhidden waituntilterminated; \
+RunOnceId: "DeleteZapret"
+
+[UninstallDelete]
+Type: filesandordirs; Name: "{userappdata}\guboril"
+Type: filesandordirs; Name: "{localappdata}\guboril"
+
+[Code]
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  BatPath, ExePath: string;
+begin
+  if CurStep = ssPostInstall then
+  begin
+    ExePath := ExpandConstant('{app}\{#MyAppExeName}');
+    BatPath := ExpandConstant('{win}\guboril.bat');
+
+    SaveStringToFile(BatPath,
+      '@echo off' + #13#10 +
+      '""' + ExePath + '"" %*',
+      False
+    );
+  end;
+end;

@@ -1,22 +1,28 @@
-const {initMainLogger, initRendererLogger}= require('./modules/logger')
+import { initMainLogger, initRendererLogger } from './modules/logger.js';
 initMainLogger()
 initRendererLogger()
 
-const { ipcMain, webFrameMain, Tray, Menu, shell, Notification, nativeImage } = require('electron');
-const { app, dialog, BrowserWindow, webFrame} = require('electron/main')
-const path = require('node:path')
-const fs = require('fs');
-const updateZapret = require('./modules/updateZapret');
-const { execSync, exec } = require('child_process')
-const { version } = require(path.join(__dirname, 'package.json'))
-const { createTask, deleteTask, checkTask } = require('./modules/scheduler.ts')
-const { saveLogsArchive } = require('./modules/saveLogs.ts')
-const myNotifcations = require('./modules/myNotifcations.ts')
-const { setSettings, getSettings } = require('./modules/settings.ts')
-const { debug, run_only_tray } = require('./modules/argsParser')
-const { zapretTest } = require('./tests/zapretTest.ts')
-const { initializeTray } = require('./modules/tray.ts')
-const { warpFix } = require('./modules/warpFix.ts')
+import { ipcMain, shell } from 'electron';
+import { app, dialog, BrowserWindow } from 'electron/main';
+import { join, resolve, dirname } from 'node:path';
+import fs from 'fs';
+import updateZapret from './modules/updateZapret.js';
+import { execSync, exec } from 'child_process';
+import pkg from './package.json' with { type: 'json' };
+const { version } = pkg;
+import { createTask, deleteTask, checkTask } from './modules/scheduler.ts';
+import { saveLogsArchive } from './modules/saveLogs.ts';
+import { sendUENotify, sendURNotify, sendServiceOnNotify, sendServiceOffNotify } from './modules/myNotifcations.ts';
+import { setSettings, getSettings } from './modules/settings.ts';
+import { debug, run_only_tray } from './modules/argsParser.js';
+// const { zapretTest } = require('./tests/zapretTest.ts')
+import { initializeTray } from './modules/tray.ts';
+import { warpFix } from './modules/warpFix.ts';
+
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 warpFix()
 
 if (!app.requestSingleInstanceLock()) {
@@ -33,20 +39,20 @@ if (process.platform !== 'win32') {
 const l = console.log
 
 
-const Zapret = require('./modules/Zapret');
-const { EventEmitter } = require('node:stream');
-
+import Zapret from './modules/Zapret.ts';
+import { init_cli } from './modules/cli.ts'
 if (debug) app.disableHardwareAcceleration() // Да ну нахуй эти VIDEO_SCHEDULER_INTERNAL_ERROR
 app.whenReady().then(async () => {
+  init_cli()
   process.on('uncaughtException', (err) => {
     err.cause
     l(err.stack)
-    myNotifcations.sendUENotify(err)
+    sendUENotify(err)
     if (!err.stack.includes('#CONTINUE_WORKING')) app.exit(1)
   })
   process.on('unhandledRejection', (err) => {
     l(err.stack)
-    myNotifcations.sendURNotify(err)
+    sendURNotify(err)
   })
 
   ////////////////
@@ -66,6 +72,7 @@ app.whenReady().then(async () => {
     }
   })
   loadingWin.loadFile('./public/loadingWin/loadingWin.html')
+  
   if (run_only_tray) loadingWin.hide()
   if (debug) {
     loadingWin.webContents.openDevTools({ mode: 'detach' }); // отдельное окно
@@ -93,9 +100,9 @@ app.whenReady().then(async () => {
 
   ipcMain.handle('zapret:install', async (_, strategy) => {
     const res = await zapret.install(strategy)
-    if (!win.isVisible()) myNotifcations.sendServiceOnNotify()
+    if (!win.isVisible()) sendServiceOnNotify()
     if (!res[0]) {
-      myNotifcations.sendUENotify({stack: zapret.output})
+      sendUENotify({stack: zapret.output})
       l(`Service installation went wrong: ${zapret.output}`)
     }
     return res
@@ -103,7 +110,7 @@ app.whenReady().then(async () => {
 
   ipcMain.handle('zapret:remove', () => {
     return zapret.remove().then(() => {
-      if (!win.isVisible()) myNotifcations.sendServiceOffNotify()
+      if (!win.isVisible()) sendServiceOffNotify()
     })
   })
   ipcMain.handle('zapret:switchGameFilter', () => zapret.switchGameFilter())
@@ -135,12 +142,11 @@ app.whenReady().then(async () => {
     resizable: false,
     title: 'Губорыл',
     
-    icon: path.join(__dirname, 'public', 'icon.ico'),
+    icon: join(__dirname, 'public', 'icon.ico'),
     webPreferences: {
         sandbox: false,
         contextIsolation: true,
-        preload: path.join(__dirname, 'preload.js'),
-        devTools: false,
+        preload: join(__dirname, 'preload.ts')
     }
   })
   ipcMain.on('save_logs', () => saveLogsArchive(win))
@@ -148,7 +154,7 @@ app.whenReady().then(async () => {
 
   ipcMain.once('uwu', async () => {
     l('Uwu!')
-    initializeTray(win, zapret, path.resolve(__dirname, 'public'))
+    initializeTray(win, zapret, resolve(__dirname, 'public'))
     if (!run_only_tray) {
       // setTimeout(() => win.show(), 5000) // Start at any cost!!!!1
       loadingWin.close()
