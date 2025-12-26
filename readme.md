@@ -2,7 +2,7 @@
 
 # [&gt;&gt;&gt; **СКАЧАТЬ** &lt;&lt;&lt;](https://github.com/EnderYeekkay/Guboril/releases/download/Guboril-v1.1.1/GuborilInstaller.exe)
 
-> [!WARNING]
+> [!IMPORTANT]
 >
 > * Чтобы удостовериться, что тут всё чисто, проверьте `.exe` файл через [Virustotal](https://www.virustotal.com/gui/home/upload) или ваш антивирус.
 > * (!!!) Данное приложение находится в разработке. Возможны баги, краши, потеря работоспособности, несогласованное состояние приложения относительно ядра.
