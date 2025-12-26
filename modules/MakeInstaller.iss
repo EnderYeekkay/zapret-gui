@@ -21,13 +21,8 @@ SetupIconFile="D:\JavaScript\zapret-gui\public\icon.ico"
 
 PrivilegesRequired=admin
 
-; Compression=lzma2/ultra64
-; SolidCompression=yes
 Compression=none
 SolidCompression=no
-
-LZMAUseSeparateProcess=yes
-LZMANumBlockThreads=32
 
 OutputBaseFilename=GuborilInstaller
 

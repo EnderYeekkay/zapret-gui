@@ -16,7 +16,7 @@ if (!fs.existsSync(settingsPath)) {
     gameFilter: false,
     autoUpdate: false,
     zapretVersion: '0',
-    selectedStrategyNum: 0,
+    selectedStrategyNum: 8,
     notifications: true,
     GH_TOKEN: null
   }

@@ -58,23 +58,13 @@ export default class Zapret extends EventEmitter{
                 /^\s*start\s+(.*)$/gmi,
                 'call $1'
             );
-            const menuBlockRegex = new RegExp(
-            [
-                '^echo =========\\s+v!LOCAL_VERSION!\\s+=========$',
-                '^echo 1\\. Install Service$',
-                '^echo 2\\. Remove Services$',
-                '^echo 3\\. Check Status$',
-                '^echo 4\\. Run Diagnostics$',
-                '^echo 5\\. Check Updates$',
-                '^echo 6\\. Switch Game Filter.*$',
-                '^echo 7\\. Switch ipset.*$',
-                '^echo 8\\. Update ipset list$',
-                '^echo 0\\. Exit$'
-            ].join('\\r?\\n'), 
-            'mi'
-            );
-            code = code.replace(menuBlockRegex, 'echo {{"gf": "%GameFilterStatus%", "v": "%LOCAL_VERSION%"}}');
-            
+            const menuBlockRegex = /echo =========\s+v!LOCAL_VERSION!\s+=========\r?\n[\s\S]*?\r?\necho 0\. Exit\s*/mi
+
+
+            code = code.replace(
+                menuBlockRegex,
+                'echo {{"gf": "%GameFilterStatus%", "v": "%LOCAL_VERSION%", "cs":"%CheckUpdatesStatus%"}}\r\n'
+            )
             // удаляем блок CHECK UPDATES целиком
             const checkUpdatesBlockRegex = /:: CHECK UPDATES =======================[\s\S]*?(?=:: DIAGNOSTICS =========================)/i;
             code = code.replace(checkUpdatesBlockRegex, '');
@@ -196,7 +186,7 @@ export default class Zapret extends EventEmitter{
         this.isBusy = true
         this.spawnChild()
         l('\x1b[1;35mswitchGameFilter()\x1b[0m')
-        this.write(6)
+        this.write(7)
         const handler = (chunk) => {
             if (this.output.includes('Restart')) {
                 l(this.output)
@@ -235,11 +225,11 @@ export default class Zapret extends EventEmitter{
         this.child = this.spawnChild()
         if (this.isBusy) throw new ZapretError('Queue error')
         const handler = (output) => {
-            if (output.includes('ACTIVE')) {
+            if (output.includes('RUNNING')) {
                 this.emit('complete', true, (output.match(/Service strategy installed from "([^"]+)"/) || [])[1] || null)
                 this.killChild()
             }
-            if (output.includes('NOT FOUND')) {
+            if (output.includes('NOT running')) {
                 this.emit('complete', false, (output.match(/Service strategy installed from "([^"]+)"/) || [])[1] || null)
                 this.killChild()
             }

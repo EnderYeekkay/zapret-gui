@@ -2,7 +2,7 @@ import { execSync, exec } from 'child_process';
 import { initMainLogger, initRendererLogger } from './modules/logger.js';
 initMainLogger()
 initRendererLogger()
-
+import update from './modules/updateGuboril.ts'
 import { ipcMain, shell } from 'electron';
 import { app, dialog, BrowserWindow } from 'electron/main';
 import { join, resolve, dirname } from 'node:path';

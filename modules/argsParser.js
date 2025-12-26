@@ -7,7 +7,7 @@ import beforeUninstall from '../scripts/beforeUninstall.ts'
 // --help
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
   console.log(`
-\x1b[1;30;42m  Guboril v${version}  \x1b[0m
+\x1b[30;42m  Guboril v${version}  \x1b[0m
 GUI для Service.bat
     -i,  --insect               Включить DevTools хрома для основного окна
     -v,  --version              Увидеть текущую версию Guboril

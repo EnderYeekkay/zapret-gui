@@ -18,5 +18,10 @@ let parsed: string
 
 parsed = raw
 parsed = parsed.replace('%version%', `"${version}"`)
-
+parsed = parsed.replace('%compression:prod%', `Compression=lzma2/ultra64
+SolidCompression=yes
+LZMAUseSeparateProcess=yes
+LZMANumBlockThreads=32`)
+parsed = parsed.replace('%compression:dev%', `Compression=none
+SolidCompression=no`)
 fs.writeFileSync(parsedPath, parsed)
