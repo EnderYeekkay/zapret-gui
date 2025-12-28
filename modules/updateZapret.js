@@ -5,7 +5,6 @@ import { app } from 'electron/main'
 import fs from 'node:fs'
 import { log } from 'node:console'
 
-
 const repo = 'Flowseal/zapret-discord-youtube'
 const userData = app.getPath('userData')
 const destDir = path.join(userData, 'core')

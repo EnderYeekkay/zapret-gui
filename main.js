@@ -141,6 +141,7 @@ app.whenReady().then(async () => {
 
   ipcMain.handle('zapret:uninstallCore', () => zapret.uninstallCore())
   ipcMain.handle('zapret:updateZapret', async () => {
+    await zapret.remove()
     await updateZapret()
     zapret = new Zapret()
   })

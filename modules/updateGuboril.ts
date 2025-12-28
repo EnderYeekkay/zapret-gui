@@ -16,11 +16,13 @@ const UpdateResponse = {
     LinkFetchFailed: 1,
     DownloadFailed: 2,
     InstallerFailed: 3,
-    Success: 4
+    Success: 4,
+    NoConnection: 5
 } as const
 export type UpdateResponseType = typeof UpdateResponse[keyof typeof UpdateResponse]
 
 export default async function execute(zapret: Zapret, loadingWin: BrowserWindow): Promise<UpdateResponseType> {
+    if (!(await checkConnection())) return UpdateResponse.NoConnection
     if (!(zapret instanceof Zapret)) throw new Error('Parameter must be an instance of the Zapret class!')
     
     const installerPath = path.resolve(app.getPath('temp'), 'TempInstaller.exe')
@@ -95,4 +97,15 @@ async function downloadInstaller(installerUrl: string, installerPath: string, lo
         })
     })
     return res
+}
+
+async function checkConnection(): Promise<boolean> {
+  try {
+    await axios.head('https://api.github.com', {
+      timeout: 3000
+    })
+    return true
+  } catch {
+    return false
+  }
 }
