@@ -26,7 +26,9 @@ export default async function execute(zapret: Zapret, loadingWin: BrowserWindow)
     if (!(zapret instanceof Zapret)) throw new Error('Parameter must be an instance of the Zapret class!')
     
     const installerPath = path.resolve(app.getPath('temp'), 'TempInstaller.exe')
-    const { latestVersion, installerUrl } = await fetchLatestGuborilVersion()
+    try {
+        var { latestVersion, installerUrl } = await fetchLatestGuborilVersion()
+    } catch (e) { sendURNotify(e); return UpdateResponse.LinkFetchFailed }
     
     if (!installerUrl) return UpdateResponse.LinkFetchFailed
     if (latestVersion == pkg.version) return UpdateResponse.Newest

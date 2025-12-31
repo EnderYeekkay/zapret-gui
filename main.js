@@ -70,7 +70,7 @@ app.whenReady().then(async () => {
     skipTaskbar: true,
     webPreferences: {
       sandbox: false,
-      preload: resolve('preloads/preload_loadingWin.ts')
+      preload: join(__dirname, 'preloads/preload_loadingWin.ts')
     }
   })
   loadingWin.loadFile('./public/loadingWin/loadingWin.html')
@@ -91,7 +91,9 @@ app.whenReady().then(async () => {
       })
       if (res == 0) {
         try {
-          if ((await update(zapret, loadingWin)) == 4) {
+          const res = await update(zapret, loadingWin)
+          l('\x1b[34mUpdateGuboril: \x1b[0m', res)
+          if (res == 4) {
             app.quit()
           }
         } catch (e) {
@@ -141,8 +143,8 @@ app.whenReady().then(async () => {
 
   ipcMain.handle('zapret:uninstallCore', () => zapret.uninstallCore())
   ipcMain.handle('zapret:updateZapret', async () => {
-    await zapret.remove()
     await updateZapret()
+    
     zapret = new Zapret()
   })
   ipcMain.on('zapret:openCoreFolder', () => zapret.openCoreFolder())

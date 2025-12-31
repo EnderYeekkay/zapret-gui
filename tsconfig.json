@@ -5,6 +5,6 @@
     "module": "nodenext",
     "allowImportingTsExtensions": true,
     "emitDeclarationOnly": true,
-    "declaration": true
+    "declaration": true,
   }
 }

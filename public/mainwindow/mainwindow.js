@@ -129,7 +129,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         })
     })
 
-
     /**
      * @type {string[]}
      */
@@ -377,7 +376,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                 `,
                 content: /* html */`
-                    <div class="btn btn_primary to_stop" id="btn_auto_update">Обновить</div>
+                    <div class="btn btn_primary to_stop" id="1">Обновить</div>
                 `
             })
         }
@@ -386,9 +385,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         $('#btn_auto_update').on('click', async function() {
             let btn = $(this)
 
+            changeServiceStyle('inactive')
             disableToStop(btn.children())
             btn.append(dc_loader)
-
+            await zapret.remove()
             await zapret.updateZapret()
 
             rollbackToStop(btn.children())
