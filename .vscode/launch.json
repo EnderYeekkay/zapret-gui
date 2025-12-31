@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "compounds": [
     {
-      "name": "Main + renderer",
+      "name": "Main + Renderer",
       "configurations": ["Main", "Renderer"],
       "stopAll": true
     }
@@ -10,10 +10,10 @@
   "configurations": [
     {
       "name": "Renderer",
-      "port": 9222,
-      "request": "attach",
+      "request": "launch",
       "type": "chrome",
-      "webRoot": "${workspaceFolder}"
+      "url": "http://localhost:5173",   // Vite dev server
+      "webRoot": "${workspaceFolder}/public/mainwindowr/src"
     },
     {
       "name": "Main",
@@ -25,6 +25,9 @@
         "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
       },
       "args": [".", "--remote-debugging-port=9222", "-i"],
+      "env": {
+        "VITE_DEV_SERVER_URL": "http://localhost:5173"
+      },
       "outputCapture": "std",
       "console": "integratedTerminal"
     }

@@ -1,7 +1,7 @@
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { contextBridge, ipcRenderer } from 'electron';
-import pkg from '../package.json' with { type: 'json' };
+import pkg from '../../package.json' with { type: 'json' };
 
 // Эмуляция __dirname в ES-модулях
 const __filename = fileURLToPath(import.meta.url);

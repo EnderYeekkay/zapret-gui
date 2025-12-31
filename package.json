@@ -17,12 +17,19 @@
     "jquery": "^3.7.1",
     "jquery-ui-dist": "^1.13.3",
     "node-unrar-js": "^2.0.2",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "winreg": "^1.2.5"
   },
   "devDependencies": {
     "@types/archiver": "^7.0.0",
     "@types/jquery": "^3.5.33",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.2",
     "electron": "^39.1.2",
-    "electron-packager": "^17.1.2"
+    "electron-packager": "^17.1.2",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.0"
   }
 }

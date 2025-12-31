@@ -1,10 +1,14 @@
 {
   "compilerOptions": {
     "resolveJsonModule": true,
-    "moduleResolution":"nodenext",
+    "moduleResolution": "nodenext",
     "module": "nodenext",
     "allowImportingTsExtensions": true,
     "emitDeclarationOnly": true,
     "declaration": true,
-  }
+    "jsx": "react-jsx",
+  },
+  "include": [
+    "./**/*" // Эта строка включает все файлы (.ts, .tsx, .d.ts) внутри папки src
+  ],
 }

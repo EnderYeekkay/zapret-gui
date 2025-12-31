@@ -1,5 +1,6 @@
 import { execSync, exec } from 'child_process';
 import { initMainLogger, initRendererLogger } from './modules/logger.js';
+import path from 'node:path';
 initMainLogger()
 initRendererLogger()
 import update, { fetchLatestGuborilVersion } from './modules/updateGuboril.ts'
@@ -70,7 +71,7 @@ app.whenReady().then(async () => {
     skipTaskbar: true,
     webPreferences: {
       sandbox: false,
-      preload: join(__dirname, 'preloads/preload_loadingWin.ts')
+      preload: join(__dirname, 'preloads/loadingWin/preload.ts')
     }
   })
   loadingWin.loadFile('./public/loadingWin/loadingWin.html')
@@ -173,7 +174,7 @@ app.whenReady().then(async () => {
     webPreferences: {
         sandbox: false,
         contextIsolation: true,
-        preload: join(__dirname, 'preloads/preload.ts')
+        preload: join(__dirname, 'preloads/mainWindow/preload.ts')
     }
   })
   ipcMain.on('save_logs', () => saveLogsArchive(win))
@@ -188,7 +189,13 @@ app.whenReady().then(async () => {
       win.show()
     }
   })
-  win.loadFile('./public/mainwindow/mainwindow.html')
+
+  if (process.env.VITE_DEV_SERVER_URL) {
+    win.loadURL(process.env.VITE_DEV_SERVER_URL)
+  } else {
+    win.loadFile(path.join(__dirname, 'public/mainwindowr/dist/index.html'))
+  }
+
   if (debug) {
     win.webContents.openDevTools({ mode: 'detach' }); // отдельное окно
   }
