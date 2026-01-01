@@ -1,0 +1,151 @@
+.btn {
+    font-size: 16px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    color: whitesmoke;
+    padding: 8px;
+    text-decoration: none;
+    transition: .1s ease-out;
+    cursor: pointer;
+}
+.btn_img16 {
+    width: 16px;
+    height: 16px;
+}
+.btn_img18 {
+    width: 18px;
+    height: 18px;
+}
+.btn_img18, .btn_img16 {
+    position: relative;
+    margin-left: 5px;
+}
+
+.btn.disabled,
+.btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    pointer-events: none;
+    transform: none !important;
+    box-shadow: none;
+}
+
+/* ---------------------------------------------------- */
+/*                      PRIMARY                         */
+/* ---------------------------------------------------- */
+.btn_primary {
+    background-color: var(--btn_primary);
+    border: 1px solid var(--btn_primary_border);
+}
+.btn_primary:hover,
+.btn_primary:focus {
+    background-color: var(--btn_primary_hover);
+    border-color: var(--btn_primary_hover_border);
+    outline: none;
+}
+.btn_primary:active {
+    background-color: var(--btn_primary_active);
+    border-color: var(--btn_primary_active_border);
+}
+.btn_primary.disabled,
+.btn_primary:disabled {
+    background-color: var(--btn_primary_disabled);
+    border-color: var(--btn_primary_disabled_border);
+}
+
+/* ---------------------------------------------------- */
+/*                      DANGER                          */
+/* ---------------------------------------------------- */
+.btn_danger {
+    background-color: var(--btn_danger);
+    border: 1px solid var(--btn_danger_border);
+}
+.btn_danger:hover,
+.btn_danger:focus {
+    background-color: var(--btn_danger_hover);
+    border-color: var(--btn_danger_hover_border);
+    outline: none;
+}
+.btn_danger:active {
+    background-color: var(--btn_danger_active);
+    border-color: var(--btn_danger_active_border);
+}
+.btn_danger.disabled,
+.btn_danger:disabled {
+    background-color: var(--btn_danger_disabled);
+    border-color: var(--btn_danger_disabled_border);
+}
+
+/* ---------------------------------------------------- */
+/*                      SUCCESS                         */
+/* ---------------------------------------------------- */
+.btn_success {
+    background-color: var(--btn_success);
+    border: 1px solid var(--btn_success_border);
+}
+.btn_success:hover,
+.btn_success:focus {
+    background-color: var(--btn_success_hover);
+    border-color: var(--btn_success_hover_border);
+    outline: none;
+}
+.btn_success:active {
+    background-color: var(--btn_success_active);
+    border-color: var(--btn_success_active_border);
+}
+.btn_success.disabled,
+.btn_success:disabled {
+    background-color: var(--btn_success_disabled);
+    border-color: var(--btn_success_disabled_border);
+}
+
+/* ---------------------------------------------------- */
+/*                     SECONDARY                        */
+/* ---------------------------------------------------- */
+.btn_secondary {
+    background-color: var(--btn_secondary);
+    border: 1px solid var(--btn_secondary_border);
+}
+
+.btn_secondary:hover,
+.btn_secondary:focus {
+    background-color: var(--btn_secondary_hover);
+    border-color: var(--btn_secondary_hover_border);
+    outline: none;
+}
+
+.btn_secondary:active {
+    background-color: var(--btn_secondary_active);
+    border-color: var(--btn_secondary_active_border);
+}
+
+.btn_secondary.disabled,
+.btn_secondary:disabled {
+    background-color: var(--btn_secondary_disabled);
+    border-color: var(--btn_secondary_disabled_border);
+}
+
+/* ---------------------------------------------------- */
+/*                       LINK                           */
+/* ---------------------------------------------------- */
+.btn_link {
+    background-color: var(--btn_link);
+    border: 1px solid var(--btn_link_border);
+}
+.btn_link:hover,
+.btn_link:focus {
+    background-color: var(--btn_link_hover);
+    border-color: var(--btn_link_hover_border);
+    outline: none;
+}
+.btn_link:active {
+    background-color: var(--btn_link_active);
+    border-color: var(--btn_link_active_border);
+}
+.btn_link.disabled,
+.btn_link:disabled {
+    background-color: var(--btn_link_disabled);
+    border-color: var(--btn_link_disabled_border);
+}

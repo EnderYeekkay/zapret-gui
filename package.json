@@ -8,7 +8,8 @@
     "start": "npx electron main.js",
     "build": "electron-packager . Guboril --platform=win32 --arch=x64 --overwrite --out=dist --icon=public/icon.ico --win32metadata.requested-execution-level=requireAdministrator --asar --ignore=modules/MakeInstaller\\.iss --ignore=tests/",
     "mi": "npm run build && node scripts\\issTemplateParser.ts && cmd /c \"\"A:\\Programs\\Inno Setup 6\\ISCC.exe\" \"modules\\MakeInstaller.iss\"\"",
-    "save_md": "git add readme.md roadmap.md && git commit -m \"md fix\" && git push origin main"
+    "save_md": "git add readme.md roadmap.md && git commit -m \"md fix\" && git push origin main",
+    "component": "node scripts\\createComponent.ts"
   },
   "dependencies": {
     "archiver": "^7.0.1",
@@ -29,6 +30,7 @@
     "@vitejs/plugin-react": "^5.1.2",
     "electron": "^39.1.2",
     "electron-packager": "^17.1.2",
+    "sass": "^1.97.1",
     "typescript": "^5.9.3",
     "vite": "^7.3.0"
   }

@@ -1,0 +1,40 @@
+/* ширина полосы */
+::-webkit-scrollbar {
+  width: 14px;
+  background: var(--container_bg);
+}
+
+/* трек — фон полосы */
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+/* сам бегунок */
+::-webkit-scrollbar-thumb {
+  background: var(--cm_inactive);
+  border-radius: 8px;
+  border: 2px solid var(--bg);           /* создаёт “вырез” и объём */
+}
+
+/* бегунок при наведении */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cm_active);
+}
+
+/* при активном захвате (удержании) */
+::-webkit-scrollbar-thumb:active {
+  /* background: var(--btn_link_active);    #272A2D — красиво темнеет */
+}
+#root {
+    /* border #393A3F */
+}
+
+body {
+  font-family: 'Roboto';
+  font-size: 16px;
+  border-radius: 15px;
+  background-color: var(--bg);
+  user-select: none;
+  color:whitesmoke;
+    margin: 0;
+}
